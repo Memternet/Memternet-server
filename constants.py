@@ -1,0 +1,2 @@
+BAD_REQUEST = 400
+LAST_ID = -1
