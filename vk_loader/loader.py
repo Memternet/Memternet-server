@@ -133,10 +133,10 @@ def download(url, filename):
 
 
 def __main__():
-    posts = get_new_posts()
-    posts = filter(is_post_meme, posts)
     os.makedirs(conf['images_dir'], exist_ok=True)
     os.makedirs('vk_loader/loaded_ids', exist_ok=True)
+    posts = get_new_posts()
+    posts = filter(is_post_meme, posts)
 
     for post in posts:
         photo = post['attachments'][0]['photo']
