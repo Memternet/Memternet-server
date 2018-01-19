@@ -35,6 +35,12 @@ def is_post_meme(post):
     if 'attachments' not in post:
         return False
 
+    if 'is_pinned' in post and post['is_pinned'] == 1:
+        return False
+
+    if 'marked_as_ads' in post and post['marked_as_ads'] == 1:
+        return False
+
     attachments = post['attachments']
 
     if type(attachments) != list:
@@ -57,18 +63,16 @@ def is_post_meme(post):
 def get_last_loaded_ids(source_id):
     try:
         with open('vk_loader/loaded_ids/' + str(source_id), 'r') as file:
-            return set(map(lambda s: int(s.replace('\n', '')), file.readlines()))
+            return list(map(lambda s: int(s.replace('\n', '')), file.readlines()))
     except IOError:
         return []
 
 
 def save_loaded_ids(source_id, ids):
-    actual = list(get_last_loaded_ids(source_id))
-    for i in ids:
-        actual.append(i)
+    actual = ids + get_last_loaded_ids(source_id)
     remember = conf['remember_loaded_ids']
     if len(actual) > remember:
-        actual = actual[len(actual) - remember:]
+        actual = actual[:remember]
     try:
         with open('vk_loader/loaded_ids/' + str(source_id), 'w') as file:
             file.write('\n'.join(map(str, actual)))
@@ -84,7 +88,7 @@ def get_new_posts():
     result = []
 
     for source_id in conf['sources']:
-        loaded_ids = get_last_loaded_ids(source_id)
+        loaded_ids = set(get_last_loaded_ids(source_id))
         to_save = []
 
         finished = False
