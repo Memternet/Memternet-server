@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine, Column, Integer, String
 from config import config
 
@@ -9,9 +9,10 @@ conf = config('db', default={
 })
 
 
-Base = declarative_base()
 engine = create_engine(conf['db_schema'])
-session = sessionmaker(bind=engine)()
+session = scoped_session(sessionmaker(bind=engine))
+Base = declarative_base()
+Base.query = session.query_property()
 
 
 class Meme(Base):
