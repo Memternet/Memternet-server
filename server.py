@@ -45,10 +45,5 @@ def get_memes():
     return jsonify(result)
 
 
-@app.route('/img/<path:filename>')
-def get_img(filename):
-    return send_from_directory('img', filename)
-
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

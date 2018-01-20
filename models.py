@@ -22,5 +22,11 @@ class Meme(Base):
     img = Column(String(32), nullable=False)
 
 
-Base.metadata.create_all(engine)
+class User(Base):
+    __tablename__ = 'users'
 
+    id = Column(Integer, primary_key=True)
+    google_id = Column(Integer, nullable=False, unique=True, index=True)
+
+
+Base.metadata.create_all(engine)
