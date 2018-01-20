@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
 import os
-from models import session, Meme
+from models import session, Base, engine
 
-session.query(Meme).delete()
 session.commit()
+session.close()
+Base.metadata.drop_all(engine)
 
 os.system('rm -r ./vk_loader/loaded_ids')
 os.system('rm -r ./img')
