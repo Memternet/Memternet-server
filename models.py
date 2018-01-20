@@ -5,7 +5,7 @@ from config import config
 
 
 conf = config('db', default={
-    "db_schema": "postgresql://memes_user:kvdiempzfhnq@localhost/memes"
+    "db_schema": "Enter your db schema here."
 })
 
 
@@ -26,7 +26,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    google_id = Column(Integer, nullable=False, unique=True, index=True)
+    google_id = Column(String(50), nullable=False, unique=True, index=True)
 
 
 Base.metadata.create_all(engine)
