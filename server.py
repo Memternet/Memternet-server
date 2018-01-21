@@ -1,7 +1,7 @@
 from flask import *
 from constants import *
 from models import session, Meme, User, Like
-from sqlalchemy import and_, func
+from sqlalchemy import and_
 from config import config
 from flask_httpauth import HTTPTokenAuth
 import redis

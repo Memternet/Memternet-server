@@ -1,0 +1,7 @@
+SQLAlchemy
+Flask
+Flask-HTTPAuth
+google-auth
+google-oauth
+redis
+requests
