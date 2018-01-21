@@ -6,21 +6,21 @@ from models import session, Meme
 import os
 
 PHOTO_URL_FIELDS = [
-    "photo_75",
-    "photo_130",
-    "photo_604",
-    "photo_807",
-    "photo_1280",
-    "photo_2560"
+    'photo_75',
+    'photo_130',
+    'photo_604',
+    'photo_807',
+    'photo_1280',
+    'photo_2560'
 ]
 
 
 conf = config('loader', default={
-    "access_token": "Enter VK access token here.",
-    "sources": [],
-    "load_limit_per_source": 20,
-    "remember_loaded_ids": 50,
-    "images_dir": "img/"
+    'access_token': 'Enter VK access token here.',
+    'sources': [],
+    'load_limit_per_source': 20,
+    'remember_loaded_ids': 50,
+    'images_dir': 'img/'
 })
 
 

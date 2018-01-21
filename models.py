@@ -5,7 +5,7 @@ from config import config
 
 
 conf = config('db', default={
-    "db_schema": "Enter your db schema here."
+    'db_schema': 'Enter your db schema here.'
 })
 
 

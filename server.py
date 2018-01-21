@@ -10,8 +10,8 @@ from google.auth.transport import requests
 
 
 conf = config('server', default={
-    "main_url": "http://127.0.0.1:8080",
-    "max_count_per_query": 20,
+    'main_url': 'http://127.0.0.1:8080',
+    'max_count_per_query': 20,
     'redis_host': 'localhost',
     'redis_port': 6379,
     'redis_prefix': 'memes_',
