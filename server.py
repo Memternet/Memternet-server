@@ -109,7 +109,7 @@ def set_like(meme_id):
     if 'score' not in request.form:
         abort(BAD_REQUEST)
 
-    score = int(request.form)
+    score = int(request.form['data'])
 
     if not (-1 <= score <= 1):
         abort(BAD_REQUEST)
