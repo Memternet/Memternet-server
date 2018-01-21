@@ -23,7 +23,43 @@ auth = HTTPTokenAuth(scheme='Token')
 cache = redis.StrictRedis(host=conf['redis_host'], port=conf['redis_port'])
 
 
+def get_google_id(token):
+    try:
+        id_info = id_token.verify_oauth2_token(token, requests.Request(), conf['google_client_id'])
+
+        if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise ValueError('Wrong issuer.')
+
+        return id_info['sub']
+    except ValueError:
+        return -1
+    except IndexError:
+        return -1
+
+
+@auth.verify_token
+def verify_token(token):
+    if not cache.exists(conf['redis_prefix'] + token):
+        google_id = str(get_google_id(token))
+        cache.set(conf['redis_prefix'] + token, google_id, ex=3600)
+
+    google_id = str(cache.get(conf['redis_prefix'] + token))
+    if google_id == -1:
+        g.current_user = None
+        return True
+
+    user = session.query(User).filter(User.google_id == google_id).first()
+    if user is None:
+        user = User(google_id=google_id)
+        session.add(user)
+        session.commit()
+
+    g.current_user = user
+    return True
+
+
 @app.route('/memes/')
+@auth.login_required
 def get_memes():
     if request.method != 'GET':
         abort(BAD_REQUEST)
@@ -47,51 +83,29 @@ def get_memes():
     }
 
     for meme in resp:
+        my_score = 0
+
+        if g.current_user is not None:
+            like = session.query(Like).filter(and_(Like.user_id == g.current_user.id, Like.meme_id == meme.id)).first()
+            if like is not None:
+                my_score = like.score
+
         result['memes'].append({
             'id': meme.id,
-            'img_url': '{}/img/{}.jpg'.format(conf['main_url'], meme.img)
+            'img_url': '{}/img/{}.jpg'.format(conf['main_url'], meme.img),
+            'rating': meme.rating,
+            'my_score': my_score
         })
 
     return jsonify(result)
 
 
-def get_google_id(token):
-    try:
-        id_info = id_token.verify_oauth2_token(token, requests.Request(), conf['google_client_id'])
-
-        if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-            raise ValueError('Wrong issuer.')
-
-        return id_info['sub']
-    except ValueError:
-        return -1
-    except IndexError:
-        return -1
-
-
-@auth.verify_token
-def verify_token(token):
-    if not cache.exists(conf['redis_prefix'] + token):
-        google_id = str(get_google_id(token))
-        cache.set(conf['redis_prefix'] + token, google_id, ex=3600)
-
-    google_id = str(cache.get(conf['redis_prefix'] + token))
-    if google_id == -1:
-        return False
-
-    user = session.query(User).filter(User.google_id == google_id).first()
-    if user is None:
-        user = User(google_id=google_id)
-        session.add(user)
-        session.commit()
-
-    g.current_user = user
-    return True
-
-
 @app.route('/like/<int:meme_id>', methods=['POST'])
 @auth.login_required
 def set_like(meme_id):
+    if g.current_user is None:
+        return 'Forbidden!', FORBIDDEN
+
     if 'score' not in request.form:
         abort(BAD_REQUEST)
 
