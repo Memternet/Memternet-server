@@ -1,7 +1,7 @@
 from flask import *
 from constants import *
-from models import session, Meme, User
-from sqlalchemy import and_
+from models import session, Meme, User, Like
+from sqlalchemy import and_, func
 from config import config
 from flask_httpauth import HTTPTokenAuth
 import redis
@@ -87,6 +87,37 @@ def verify_token(token):
 
     g.current_user = user
     return True
+
+
+@app.route('/like/<int:meme_id>', methods=['POST'])
+@auth.login_required
+def set_like(meme_id):
+    if 'score' not in request.form:
+        abort(BAD_REQUEST)
+
+    score = int(request.form)
+
+    if not (-1 <= score <= 1):
+        abort(BAD_REQUEST)
+
+    user = g.current_user
+    meme = session.query(Meme).filter(Meme.id == meme_id).first()
+
+    if meme is None:
+        abort(BAD_REQUEST)
+
+    like = session.query(Like).filter(and_(Like.meme_id == meme.id, Like.user_id == user.id)).first()
+    old_score = 0 if like is None else like.score
+
+    if like is None:
+        like = Like(meme_id=meme.id, user_id=user.id, score=score)
+        session.add(like)
+    else:
+        like.score = score
+
+    meme.rating = meme.rating - old_score + score
+    session.commit()
+    return 'OK', CREATED
 
 
 if __name__ == '__main__':

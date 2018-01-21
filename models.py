@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import sessionmaker, scoped_session, relationship
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Index
 from config import config
 
 
@@ -20,6 +20,7 @@ class Meme(Base):
 
     id = Column(Integer, primary_key=True)
     img = Column(String(32), nullable=False)
+    rating = Column(Integer, default=0)
 
 
 class User(Base):
@@ -29,4 +30,14 @@ class User(Base):
     google_id = Column(String(50), nullable=False, unique=True, index=True)
 
 
+class Like(Base):
+    __tablename__ = 'likes'
+
+    id = Column(Integer, primary_key=True)
+    meme_id = Column(Integer, ForeignKey('memes.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    score = Column(Integer, nullable=False)
+
+
+Index('likes_meme_user_idx', Like.meme_id, Like.user_id, unique=True)
 Base.metadata.create_all(engine)
