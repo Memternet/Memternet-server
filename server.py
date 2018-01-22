@@ -20,7 +20,7 @@ conf = config('server', default={
 
 app = Flask(__name__)
 auth = HTTPTokenAuth(scheme='Token')
-cache = redis.StrictRedis(host=conf['redis_host'], port=conf['redis_port'])
+cache = redis.StrictRedis(host=conf['redis_host'], port=conf['redis_port'], charset="utf-8", decode_responses=True)
 
 
 def get_google_id(token):
@@ -31,7 +31,7 @@ def get_google_id(token):
             raise ValueError('Wrong issuer.')
 
         return id_info['sub']
-    except ValueError:
+    except ValueError as e:
         return -1
     except IndexError:
         return -1
