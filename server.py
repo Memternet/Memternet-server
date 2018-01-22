@@ -44,7 +44,7 @@ def verify_token(token):
         cache.set(conf['redis_prefix'] + token, google_id, ex=3600)
 
     google_id = str(cache.get(conf['redis_prefix'] + token))
-    if google_id == -1:
+    if google_id == '-1':
         g.current_user = None
         return True
 
@@ -104,12 +104,15 @@ def get_memes():
 @auth.login_required
 def set_like(meme_id):
     if g.current_user is None:
-        return 'Forbidden!', FORBIDDEN
+        abort(FORBIDDEN)
 
     if 'score' not in request.form:
         abort(BAD_REQUEST)
 
-    score = int(request.data)
+    try:
+        score = int(request.form['score'])
+    except ValueError:
+        abort(BAD_REQUEST)
 
     if not (-1 <= score <= 1):
         abort(BAD_REQUEST)
