@@ -114,7 +114,7 @@ def get_top():
     offset = int(request.args.get('offset', 0))
 
     resp = session.query(Meme)\
-        .order_by(Meme.id.desc())\
+        .order_by(Meme.rating.desc())\
         .limit(count)\
         .offset(offset)\
         .all()
