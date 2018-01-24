@@ -58,6 +58,29 @@ def verify_token(token):
     return True
 
 
+def get_list_memes(resp):
+    result = {
+        'memes': []
+    }
+
+    for meme in resp:
+        my_score = 0
+
+        if g.current_user is not None:
+            like = session.query(Like).filter(and_(Like.user_id == g.current_user.id, Like.meme_id == meme.id)).first()
+            if like is not None:
+                my_score = like.score
+
+        result['memes'].append({
+            'id': meme.id,
+            'img_url': '{}/img/{}.jpg'.format(conf['main_url'], meme.img),
+            'rating': meme.rating,
+            'my_score': my_score
+        })
+
+    return result
+
+
 @app.route('/memes/')
 @auth.login_required
 def get_memes():
@@ -78,26 +101,25 @@ def get_memes():
             .filter(and_(start_id - count + 1 <= Meme.id, Meme.id <= start_id))\
             .all()
 
-    result = {
-        'memes': []
-    }
+    return jsonify(get_list_memes(resp))
 
-    for meme in resp:
-        my_score = 0
 
-        if g.current_user is not None:
-            like = session.query(Like).filter(and_(Like.user_id == g.current_user.id, Like.meme_id == meme.id)).first()
-            if like is not None:
-                my_score = like.score
+@app.route('/top/')
+@auth.login_required
+def get_top():
+    if request.method != 'GET':
+        abort(BAD_REQUEST)
 
-        result['memes'].append({
-            'id': meme.id,
-            'img_url': '{}/img/{}.jpg'.format(conf['main_url'], meme.img),
-            'rating': meme.rating,
-            'my_score': my_score
-        })
+    count = min(conf['max_count_per_query'], int(request.args.get('count', 10)))
+    offset = int(request.args.get('offset', 0))
 
-    return jsonify(result)
+    resp = session.query(Meme)\
+        .order_by(Meme.id.desc())\
+        .limit(count)\
+        .offset(offset)\
+        .all()
+
+    return jsonify(get_list_memes(resp))
 
 
 @app.route('/like/<int:meme_id>', methods=['POST'])

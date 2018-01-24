@@ -20,7 +20,7 @@ class Meme(Base):
 
     id = Column(Integer, primary_key=True)
     img = Column(String(32), nullable=False)
-    rating = Column(Integer, default=0)
+    rating = Column(Integer, default=0, index=True)
 
 
 class User(Base):
