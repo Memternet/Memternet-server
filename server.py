@@ -114,12 +114,35 @@ def get_top():
     offset = int(request.args.get('offset', 0))
 
     resp = session.query(Meme)\
-        .order_by(Meme.rating.desc())\
+        .order_by(Meme.rating.desc(), Meme.id.desc())\
         .limit(count)\
         .offset(offset)\
         .all()
 
     return jsonify(get_list_memes(resp))
+
+
+@app.route('/tmp/')
+@auth.login_required
+def tmp():
+    if request.method != 'GET':
+        abort(BAD_REQUEST)
+
+    count = min(conf['max_count_per_query'], int(request.args.get('count', 10)))
+    offset = int(request.args.get('offset', 0))
+
+    resp = session.query(Meme)\
+        .order_by(Meme.rating.desc(), Meme.id.desc())\
+        .limit(count)\
+        .offset(offset)\
+        .all()
+
+    html = '<html>{}</html>'
+    imgs = ''
+    for meme in get_list_memes(resp)['memes']:
+        imgs += '<img src="{}"/><br>{} {}<br><br>'.format(meme['img_url'], meme['id'], meme['img_url'])
+    html = html.format(imgs)
+    return html
 
 
 @app.route('/like/<int:meme_id>', methods=['POST'])
